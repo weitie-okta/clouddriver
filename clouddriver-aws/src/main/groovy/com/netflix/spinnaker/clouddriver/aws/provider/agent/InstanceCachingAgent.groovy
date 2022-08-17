@@ -63,8 +63,10 @@ class InstanceCachingAgent implements CachingAgent, AccountAware, DriftMetric {
   final String region
   final ObjectMapper objectMapper
   final Registry registry
+  final AmazonCachingAgentFilter amazonCachingAgentFilter
 
-  InstanceCachingAgent(AmazonClientProvider amazonClientProvider, NetflixAmazonCredentials account, String region, ObjectMapper objectMapper, Registry registry) {
+  InstanceCachingAgent(AmazonClientProvider amazonClientProvider, NetflixAmazonCredentials account, String region, ObjectMapper objectMapper, Registry registry,
+                       AmazonCachingAgentFilter amazonCachingAgentFilter) {
     this.amazonClientProvider = amazonClientProvider
     this.account = account
     this.region = region
@@ -143,6 +145,14 @@ class InstanceCachingAgent implements CachingAgent, AccountAware, DriftMetric {
       }
 
       partition.each { Instance instance ->
+        def instanceTags = instance.tags?.collect {
+          new AmazonCachingAgentFilter.ResourceTag(it.key, it.value)
+        }
+
+        if (!amazonCachingAgentFilter.shouldRetainResource(asgTags)) {
+          continue
+        }
+
         def data = new InstanceData(instance, account.name, region)
         if (instances.containsKey(data.instanceId)) {
           log.warn("Duplicate instance for ${data.instanceId}")

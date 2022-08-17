@@ -161,7 +161,12 @@ public class ProviderHelpers {
 
         newlyAddedAgents.add(
             new InstanceCachingAgent(
-                amazonClientProvider, credentials, region.getName(), objectMapper, registry));
+                amazonClientProvider,
+                credentials,
+                region.getName(),
+                objectMapper,
+                registry,
+                amazonCachingAgentFilter));
         newlyAddedAgents.add(
             new AmazonLoadBalancerCachingAgent(
                 amazonCloudProvider,
